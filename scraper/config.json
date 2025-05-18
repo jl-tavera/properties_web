@@ -1,0 +1,37 @@
+{
+    "GENERAL": {
+        "IMAGE_DIR": "./scraper/assets/temp/images/"
+    },   
+    
+    "MAPS_NEARBY": {
+        "RADIUS":1000,
+        "INCLUDED_TYPES": [
+            "supermarket", 
+            "convenience_store",  
+            "restaurant",  
+            "park", 
+            "transit_station",  
+            "bus_station",         
+            "subway_station"       
+        ]},
+
+    "OPENAI": {
+        "MODEL": "gpt-4o",
+        "IMAGE_DETAIL": "low",
+        "MAX_TOKENS": 3000,
+        "PROMPT": ""
+        },
+
+    "CRAWLER": {
+        "LISTINGS": {
+            "TYPOLOGY_PATTERN": "(\\d+)\\s*Habs\\.?\\s*(\\d+)\\s*Baño[s]?\\s*(\\d+)\\s*m²"
+        },
+        "DETAIL": {
+            "HEADLESS": true,
+            "TIMEOUT": {
+                "REQUEST_TIMEOUT":60000,
+                "ELEMENT_TIMEOUT": 5000
+            }}
+        }
+}
+
