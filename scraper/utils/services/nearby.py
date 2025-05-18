@@ -2,11 +2,11 @@ import requests
 from utils.processing.geocalc import calculate_distance
 
 # Unified search function
-def get_nearby_places_combined(api_key:str, 
-                               latitude:float, 
-                               longitude:float, 
-                               radius: int ,
-                               included_types: list ) -> list:
+def get_nearby_places(api_key:str, 
+                      latitude:float, 
+                      longitude:float, 
+                      radius: int,
+                      included_types: list ) -> list:
     url = "https://places.googleapis.com/v1/places:searchNearby"
     headers = {
         "Content-Type": "application/json",
@@ -25,7 +25,7 @@ def get_nearby_places_combined(api_key:str,
             }
         },
         "includedTypes": included_types,
-        "languageCode": "es-CO"
+        "languageCode": "es-CO"  # Ya pides respuesta en español
     }
 
     response = requests.post(url, headers=headers, json=payload)
@@ -34,19 +34,19 @@ def get_nearby_places_combined(api_key:str,
         return []
 
     data = response.json()
-    results = []
-    for place in data.get("places", []):
-        loc = place.get("location", {})
-        dist = calculate_distance(lat1 = latitude, 
+    resultados = []
+    for lugar in data.get("places", []):
+        loc = lugar.get("location", {})
+        dist = calculate_distance(lat1=latitude, 
                                   lon1=longitude, 
-                                  lat2= loc["latitude"], 
-                                  lon2 = loc["longitude"]) if loc else None
-        results.append({
-            "name": place.get("displayName", {}).get("text", ""),
-            "address": place.get("formattedAddress", ""),
-            "types": place.get("types", []),
-            "distance_km": round(dist, 2) if dist else None
+                                  lat2=loc.get("latitude"), 
+                                  lon2=loc.get("longitude")) if loc else None
+        resultados.append({
+            "nombre": lugar.get("displayName", {}).get("text", ""),
+            "dirección": lugar.get("formattedAddress", ""),
+            "tipos": lugar.get("types", []),
+            "distancia_km": round(dist, 2) if dist else None
         })
 
-    return results
+    return resultados
 

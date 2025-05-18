@@ -33,6 +33,7 @@ def scrape_listing_card(card: bs4.element.Tag,
 
     price_tag = card.find('div', class_='lc-price')
     price = price_tag.get_text(strip=True) if price_tag else None
+    price = re.sub(r"[^\d]", "", price)
 
     location_tag = card.find('strong', class_='lc-location')
     location = location_tag.get_text(strip=True) if location_tag else None

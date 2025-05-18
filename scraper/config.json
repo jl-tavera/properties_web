@@ -1,6 +1,7 @@
 {
     "GENERAL": {
-        "IMAGE_DIR": "./scraper/assets/temp/images/"
+        "IMAGE_DIR": "./scraper/assets/temp/images/",
+        "CSV_PATH": "./scraper/assets/data/listings.csv"
     },   
     
     "MAPS_NEARBY": {
@@ -19,7 +20,7 @@
         "MODEL": "gpt-4o",
         "IMAGE_DETAIL": "low",
         "MAX_TOKENS": 3000,
-        "PROMPT": "Describe los siguientes aspectos que solo pueden observarse visualmente en estas imágenes de un apartamento:\n\n1. Qué tan moderno parece el apartamento en cuanto a diseño, acabados y mobiliario.\n2. Iluminación natural: si entra luz por ventanas grandes, orientación de la luz, y cómo afecta la atmósfera del lugar.\n3. Distribución del espacio en cada área: cocina, sala, habitaciones, baños, etc. Comenta si los espacios están bien aprovechados, abiertos o segmentados.\n4. La vista exterior visible desde cada habitación: si hay vista a la ciudad, a zonas verdes, edificios cercanos, etc.\n5. Estado general del lugar: limpieza, conservación, presencia de decoración o detalles acogedores.\n\nHaz una descripción general integrando todos estos aspectos, con un tono claro, objetivo y profesional, como si estuvieras escribiendo una descripción para una plataforma inmobiliaria de alto nivel."
+        "PROMPT": "Analiza las siguientes imágenes del apartamento y proporciona una descripción precisa y detallada de:\n\n1. El estilo arquitectónico y nivel de modernidad de los acabados, materiales y mobiliario visible.\n2. La iluminación natural: tamaño y ubicación de ventanas, cantidad de luz que entra y distribución de la misma en los espacios.\n3. La distribución del espacio: cómo están organizadas las áreas (cocina, sala, habitaciones, baños), si los ambientes son abiertos o cerrados, y la relación entre ellos.\n4. Las vistas exteriores desde cada habitación: lo que se alcanza a ver desde las ventanas, tipo de entorno (urbano, natural, cerrado, despejado, etc.).\n5. Estado general: limpieza, desgaste, conservación de paredes, pisos y techos, y si hay decoración relevante o elementos estructurales particulares.\n\nEvita opiniones o lenguaje comercial. Describe solamente lo que puede observarse de forma directa en las imágenes, con lenguaje técnico y claro. Damelo en un parrafo en texto plano(NO USES MARKDOWN Y EVITA COMAS)"
         },
 
     "PROXY": {
