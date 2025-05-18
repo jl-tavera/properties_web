@@ -22,9 +22,9 @@ def main():
         existing_links = set()
 
     for page_num in range(1,65):
-        url = "https://www.fincaraiz.com.co/arriendo/apartamentos/bogota/bogota-dc/publicado-ultimos-7-dias/pagina{page_num}?&ordenListado=3"
+        url = f"https://www.fincaraiz.com.co/arriendo/apartamentos/bogota/bogota-dc/publicado-ultimos-7-dias/pagina{page_num}?&ordenListado=3"
         cards = scrape_listing_page(url=url, headers=headers, proxies=proxy_http_dict)
-
+        print(len(cards), "cards found on page:", page_num)
         typology_pattern = config['CRAWLERS']['LISTINGS']['TYPOLOGY_PATTERN']
 
         for card in cards:
@@ -53,7 +53,7 @@ def main():
                                             radius=config['MAPS_NEARBY']['RADIUS'],
                                             included_types=config['MAPS_NEARBY']['INCLUDED_TYPES'])
 
-                    save_scraped_data(csv_path, card_info, details, description, places, page_num)
+                    save_scraped_data(csv_path, card_info, details, description, places)
                     existing_links.add(card_info["Link"])
 
         print("Scraping completed for page:", page_num)
