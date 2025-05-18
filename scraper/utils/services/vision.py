@@ -2,12 +2,20 @@ import base64
 import os
 import requests
 
-# Your OpenAI API key
 
 # Function to encode an image to base64
 def encode_image(image_path:str) -> str:
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
+    
+def delete_images_in_dir(image_dir: str, extensions: tuple = ('.png', '.jpg', '.jpeg')) -> None:
+    """Delete all image files in a directory with the specified extensions."""
+    image_files = [f for f in os.listdir(image_dir) if f.lower().endswith(extensions)]
+    for file_name in image_files:
+        try:
+            os.remove(os.path.join(image_dir, file_name))
+        except Exception as e:
+            print(f"Failed to delete {file_name}: {e}")
 
 # Function to analyze apartment images
 def describe_apartment_images(api_key:str,
@@ -62,7 +70,7 @@ def describe_apartment_images(api_key:str,
     data = response.json()
     description = data['choices'][0]['message']['content']
 
-    return description
+    delete_images_in_dir(image_dir)
 
-description = describe_apartment_images(sample=False, api_key='asd')
-print(description)
+
+    return description

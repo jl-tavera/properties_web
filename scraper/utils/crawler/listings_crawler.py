@@ -1,5 +1,6 @@
 import re
 import requests
+import bs4
 from bs4 import BeautifulSoup
 from datetime import datetime
 
@@ -22,7 +23,9 @@ def scrape_listing_page(url: str,
     return cards
 
 
-def scrape_listing_card(card, existing_links, typology_pattern: re.Pattern) -> dict:
+def scrape_listing_card(card: bs4.element.Tag, 
+                        existing_links:list, 
+                        typology_pattern: re.Pattern) -> dict:
     link_tag = card.find('a', class_='lc-cardCover')
     link = "https://www.fincaraiz.com.co" + link_tag['href'] if link_tag else None
     if not link or link in existing_links:
@@ -36,7 +39,7 @@ def scrape_listing_card(card, existing_links, typology_pattern: re.Pattern) -> d
 
     typology_tag = card.find('div', class_='lc-typologyTag')
     typology = typology_tag.get_text(strip=True) if typology_tag else None
-    print(typology)
+    typology_pattern = re.compile(typology_pattern)
 
     bedrooms = bathrooms = area = None
     if typology:

@@ -19,10 +19,16 @@
         "MODEL": "gpt-4o",
         "IMAGE_DETAIL": "low",
         "MAX_TOKENS": 3000,
-        "PROMPT": ""
+        "PROMPT": "Describe los siguientes aspectos que solo pueden observarse visualmente en estas imágenes de un apartamento:\n\n1. Qué tan moderno parece el apartamento en cuanto a diseño, acabados y mobiliario.\n2. Iluminación natural: si entra luz por ventanas grandes, orientación de la luz, y cómo afecta la atmósfera del lugar.\n3. Distribución del espacio en cada área: cocina, sala, habitaciones, baños, etc. Comenta si los espacios están bien aprovechados, abiertos o segmentados.\n4. La vista exterior visible desde cada habitación: si hay vista a la ciudad, a zonas verdes, edificios cercanos, etc.\n5. Estado general del lugar: limpieza, conservación, presencia de decoración o detalles acogedores.\n\nHaz una descripción general integrando todos estos aspectos, con un tono claro, objetivo y profesional, como si estuvieras escribiendo una descripción para una plataforma inmobiliaria de alto nivel."
         },
 
-    "CRAWLER": {
+    "PROXY": {
+        "USER_AGENTS_PATH": "./scraper/assets/user_agents/user_agents.csv",
+        "ACCEPT_LANGUAGE": "es-CO,es;q=0.9,en;q=0.8",
+        "ACCEPT": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"
+    },
+
+    "CRAWLERS": {
         "LISTINGS": {
             "TYPOLOGY_PATTERN": "(\\d+)\\s*Habs\\.?\\s*(\\d+)\\s*Baño[s]?\\s*(\\d+)\\s*m²"
         },

@@ -2,8 +2,8 @@ import asyncio
 from playwright.async_api import async_playwright
 import aiohttp
 import os
-from scraper.utils.processing.parsing import *
-from scraper.utils.processing.geocalc import *
+from utils.processing.parsing import *
+from utils.processing.geocalc import *
 
 
 '''
@@ -274,7 +274,7 @@ async def get_facilities(page, timeout):
                     if (label) {
                         result.push(label);
                     } else {
-                        console.log( ${index} not found`);
+                        console.log(`${index} not found`);
                     }
                 });
 
@@ -330,7 +330,13 @@ async def get_admin_value(page, timeout):
 MAIN FUNCTION
 '''
 
-async def scrape_listing_page(headless, proxy, headers, url, timeout, element_timeout):
+async def scrape_details_page(headless:bool, 
+                              proxy:dict, 
+                              headers:dict, 
+                              url:str, 
+                              img_folder:str,
+                              timeout:int, 
+                              element_timeout:int):
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(proxy=proxy, headless=headless)
@@ -352,7 +358,7 @@ async def scrape_listing_page(headless, proxy, headers, url, timeout, element_ti
 
 
             # Step 2: Download the images
-            await get_apartment_images(page)
+            await get_apartment_images(page, element_timeout, img_folder)
             
             # Step 3: Get coordinates from the page
             lat, lng = await get_coordinates(page)
@@ -360,13 +366,19 @@ async def scrape_listing_page(headless, proxy, headers, url, timeout, element_ti
                 print("No coordinates could be found.")
             else:
                 coordinates = (lat, lng)
+                details = {
+                    "coordinates": coordinates,
+                    "administracion": admin_value,
+                    "facilities": facilities,
+                    "upload_date": upload_date,
+                    "technical_data": technical_data,
+                    "description": description
+                }
                 print(f"Coordinates successfully extracted: Latitude = {lat}, Longitude = {lng}")
-                return coordinates, admin_value, facilities, upload_date, technical_data, description
+                return details
 
         except Exception as e:
             print(f"Error during scraping: {e}")
         finally:
             await browser.close()
 
-# Run the scrape_listing_page function
-asyncio.run(scrape_listing_page())

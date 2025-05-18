@@ -1,5 +1,5 @@
 import requests
-from scraper.utils.processing.geocalc import calculate_distance
+from utils.processing.geocalc import calculate_distance
 
 # Unified search function
 def get_nearby_places_combined(api_key:str, 
@@ -50,12 +50,3 @@ def get_nearby_places_combined(api_key:str,
 
     return results
 
-
-
-# Example usage
-api_key = "AIzaSyD0NGH4rFgsAciNSwUPfgIqnPvdWT1C7Fw"
-latitude = 4.657228974520381
-longitude = -74.1244125366211
-places = get_nearby_places_combined(api_key, latitude, longitude)
-for place in places:
-    print(f"{place['name']} - {place['distance_km']} km away ({', '.join(place['types'])})")
