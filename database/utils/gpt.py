@@ -151,7 +151,6 @@ def llm_formating(df: pd.DataFrame, api_key: str) -> pd.DataFrame:
             input_text = row["places_input"]
             try:
                 result = extract_place_info_from_text(input_text, api_key)
-                print(f"[{i+1}/{total}] Resultado raw lugares: {result}")
 
                 # Limpiar y convertir a strings para CSV
                 df.at[i, "places"] = result["places"]

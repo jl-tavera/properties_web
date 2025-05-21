@@ -8,8 +8,8 @@ from utils.vector_db import *
 def main(file_path:str) -> pd.DataFrame:
     api_key = os.getenv("OPENAI_API_KEY")
 
-    raw_path = os.path.join(file_path, "/raw/listings_test.csv")
-    clean_path = os.path.join(file_path, "/clean/listings_test.csv")
+    raw_path = os.path.join(file_path, "raw/listings.csv")
+    clean_path = os.path.join(file_path, "clean/listings.csv")
 
     df = read_and_clean_csv(file_path= raw_path)
 
