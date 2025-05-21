@@ -1,48 +1,46 @@
+import os
+import ast
 import json
+import warnings
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+from qdrant_client import models, QdrantClient
+from sentence_transformers import SentenceTransformer
 
+warnings.filterwarnings('ignore')
+encoder = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
 
-def try_fix_unicode(text):
-    if isinstance(text, str) and '\\u' in text:
-        try:
-            return text.encode('utf-8').decode('unicode_escape')
-        except Exception:
-            return text  # if decoding fails, return original
-    else:
-        return text
+client = QdrantClient(
+        url="http://localhost:6333"
+)
 
+class Document:
+    def __init__(self, page_content, metadata):
+        self.page_content = page_content
+        self.metadata = metadata
 
-def read_and_clean_csv(file_path):
-        # Read the CSV with latin1 encoding to avoid UnicodeDecodeError
-    df = pd.read_csv(file_path= file_path, 
-                     encoding="latin1")
-
-    # Fix garbled text (mojibake) in all string columns
-    for col in df.select_dtypes(include='object'):
-        df[col] = df[col].apply(lambda x: x.encode('latin1').decode('utf-8') if isinstance(x, str) else x)
-    return df
-
-def load_json_format(df: pd.DataFrame, cols: list): 
-    for col in cols:
-        df[col] = df[col].apply(json.loads)
-        if col == 'coordinates':
-            df[col] = df[col].apply(tuple)
-
-    return df
-
-def calculate_total_price(df: pd.DataFrame) -> pd.DataFrame:
-    df['administracion'] = df['administracion'].fillna(0)
-    df['Price'] = df['Price'] + df['administracion']
-    df['Price'] = df['Price'].astype(int)
-    return df
-
-
-def format_integer_cols(df: pd.DataFrame, cols: list) -> pd.DataFrame:
-    df = df.dropna(subset=[cols[0]])
-    df = df.reset_index(drop=True)
-    for col in cols:
-        df[col] = df[col].astype(int)
-        
-    return df
+# Convert DataFrame rows into Document objects
+def df_to_documents(df):
+    documents = []
+    for _, row in df.iterrows():
+        metadata = {
+            "link": row["link"],
+            "price": row["price"],
+            "bedrooms": row["bedrooms"],
+            "bathrooms": row["bathrooms"],
+            "area": row["area"],
+            "agency": row["agency"],
+            "coordinates": row["coordinates"],
+            "facilities": row["facilities"],
+            "upload_date": row["upload_date"],
+            "stratum": row["stratum"],
+            "parking_lots": row["parking_lots"],
+            "floor": row["floor"],
+            "construction_age_min": row["construction_age_min"],
+            "construction_age_max": row["construction_age_max"],
+            "places": row["places"],
+            "location": row["location"],
+            "transportation": row["transportation"],
+        }
+        document = Document(page_content=row["description"], metadata=metadata)
+        documents.append(document)
+    return documents
