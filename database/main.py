@@ -51,8 +51,32 @@ def main(file_path:str) -> pd.DataFrame:
     df.to_csv(clean_path, index=False)
 
 
+def populate_vector_db(file_path:str, 
+                       collection_name:str) -> None:
+    
+    clean_path = os.path.join(file_path, "clean/listings.csv")
+    df = read_and_clean_csv(clean_path)
+    df.dropna(subset=['places'], inplace=True)
+    encoder = create_encoder(model_name="paraphrase-multilingual-MiniLM-L12-v2")
+    client = QdrantClient(url="http://localhost:6333")
+    list_cols = ['coordinates', 'facilities', 'places', 'location', 'transportation']
+    df = load_list_cols(df=df, cols=list_cols)
+    # Create collection
+    create_collection(client=client, encoder=encoder, collection_name=collection_name)
+
+    # Populate collection
+    documents = df_to_documents(df)
+    populate_collection(client=client, 
+                        encoder=encoder, 
+                        df=df, 
+                        collection_name=collection_name, 
+                        documents=documents)
+    
+    print("Vector DB populated successfully.")
 
 
 
 if __name__ == "__main__":
-    main(file_path='./database/assets/data')
+#    main(file_path='./database/assets/data')
+    populate_vector_db(file_path='./database/assets/data',
+                       collection_name='apartments')

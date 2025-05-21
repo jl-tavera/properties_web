@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 import numpy as np
+import ast
 import matplotlib.pyplot as plt
 from dotenv import load_dotenv
 
@@ -39,6 +40,13 @@ def load_json_cols(df: pd.DataFrame, cols: list):
         if col == 'coordinates':
             df[col] = df[col].apply(tuple)
 
+    return df
+
+def load_list_cols(df: pd.DataFrame, cols: list):
+    for col in cols: 
+        df[col] = df[col].apply(ast.literal_eval)
+        if col == 'coordinates':
+            df[col] = df[col].apply(tuple)
     return df
 
 def calculate_total_price(df: pd.DataFrame) -> pd.DataFrame:

@@ -1,17 +1,14 @@
-import os
-import ast
-import json
 import warnings
-import pandas as pd
 from qdrant_client import models, QdrantClient
 from sentence_transformers import SentenceTransformer
 
-warnings.filterwarnings('ignore')
-encoder = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+def create_client(url: str):
+    # Creates a Qdrant client instance
+    return QdrantClient(url=url)
 
-client = QdrantClient(
-        url="http://localhost:6333"
-)
+def create_encoder(model_name: str):
+    # Creates a SentenceTransformer encoder instance
+    return SentenceTransformer(model_name)
 
 class Document:
     def __init__(self, page_content, metadata):
@@ -44,3 +41,29 @@ def df_to_documents(df):
         document = Document(page_content=row["description"], metadata=metadata)
         documents.append(document)
     return documents
+
+def create_collection(client, encoder, collection_name: str):
+    # Creates a collection in Qdrant
+    client.recreate_collection(
+        collection_name=collection_name,
+       vectors_config=models.VectorParams(
+        size=encoder.get_sentence_embedding_dimension(),
+        distance=models.Distance.COSINE,
+    ),
+    )
+
+def populate_collection(client, encoder, df, collection_name: str, documents):
+    docs = df_to_documents(df)
+    # Populates the collection with documents
+    points = [
+        models.PointStruct(
+            id=idx, 
+            vector=encoder.encode(doc.page_content).tolist(), 
+            payload={'metadata': doc.metadata, 'page_content': doc.page_content}
+        )
+
+    for idx, doc in enumerate(docs)]
+
+    client.upload_points(
+    collection_name="apartments",
+    points=points,)
