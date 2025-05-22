@@ -65,12 +65,9 @@ def populate_vector_db(file_path:str,
     create_collection(client=client, encoder=encoder, collection_name=collection_name)
 
     # Populate collection
-    documents = df_to_documents(df)
     populate_collection(client=client, 
                         encoder=encoder, 
-                        df=df, 
-                        collection_name=collection_name, 
-                        documents=documents)
+                        df=df)
     
     print("Vector DB populated successfully.")
 

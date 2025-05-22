@@ -1,0 +1,78 @@
+[
+    {
+      "name": "bedrooms",
+      "description": "El numero de habitaciones en el apartamento",
+      "type": "integer"
+    },
+    {
+      "name": "bathrooms",
+      "description": "El numero de baños en el apartamento",
+      "type": "integer"
+    },
+    {
+      "name": "price",
+      "description": "El costo de la renta del apartamento en pesos colombianos",
+      "type": "float"
+    },
+    {
+      "name": "area",
+      "description": "El area del apartamento en metros cuadrados",
+      "type": "integer"
+    },
+    {
+      "name": "agency",
+      "description": "Nombre de la inmobiliaria que ofrece el apartamento",
+      "type": "string"
+    },
+    {
+      "name": "facilities",
+      "description": "Todas las comodidades que tiene el apartamento (piscina, gimnasio, etc.)",
+      "type": "list[string]"
+    },
+    {
+      "name": "stratum",
+      "description": "El estrato del apartamento (1-6) donde 1 es el mas bajo y 6 el mas alto",
+      "type": "integer"
+    },
+    {
+      "name": "parking_lots",
+      "description": "El numero de parqueaderos que tiene el apartamento",
+      "type": "integer"
+    },
+    {
+      "name": "floor",
+      "description": "El numero del piso donde se encuentra el apartamento, si es -1 no sabemos donde esta",
+      "type": "integer"
+    },
+    {
+      "name": "upload_date",
+      "description": "La fecha de subida del apartamento a la plataforma",
+      "type": "string"
+    },
+    {
+      "name": "construction_age_min",
+      "description": "Años minimos de construccion del apartamento, Ej: lleva al menos 1 año construido",
+      "type": "integer"
+    },
+    {
+      "name": "construction_age_max",
+      "description": "Años maximos de construccion del apartamento, Ej: lleva menos de 8 años de construido",
+      "type": "integer"
+    },
+    {
+      "name": "places",
+      "description": "Los lugares cercanos al apartamento (universidades, parques, etc.)",
+      "type": "list[string]"
+    },
+    {
+      "name": "location",
+      "description": "El barrio, ciudad y departamento donde se encuentra el apartamento",
+      "type": "list[string]"
+    },
+    {
+      "name": "transportation",
+      "description": "Las vias de transporte cercanas al apartamento (transmilenio, paradas, etc.)",
+      "type": "list[string]"
+    }
+  ]
+  

@@ -18,8 +18,9 @@ class Document:
 # Convert DataFrame rows into Document objects
 def df_to_documents(df):
     documents = []
-    for _, row in df.iterrows():
+    for idx, row in df.iterrows():
         metadata = {
+            "id": int(idx),
             "link": row["link"],
             "price": row["price"],
             "bedrooms": row["bedrooms"],
@@ -52,7 +53,7 @@ def create_collection(client, encoder, collection_name: str):
     ),
     )
 
-def populate_collection(client, encoder, df, collection_name: str, documents):
+def populate_collection(client, encoder, df):
     docs = df_to_documents(df)
     # Populates the collection with documents
     points = [
