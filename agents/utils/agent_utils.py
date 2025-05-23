@@ -1,6 +1,8 @@
 import re
+import json
 from langchain.memory import ConversationBufferMemory
 from langchain.agents import Tool, initialize_agent, AgentType
+from qdrant_client.models import Filter, FieldCondition, MatchText
 
 # 1. ────────────────────────────  System Prompt mejorado
 SYSTEM_PROMPT = """
@@ -19,7 +21,7 @@ Reglas clave:
 • Nunca inventes datos; si no hay resultados, di cortésmente que no
   encontraste coincidencias.
 """
-ID_PATTERN = re.compile(r"^\d{1,4}$")          # hasta 6 dígitos; ajusta a tu rango
+ID_PATTERN = re.compile(r"^\d{1,4}$")         
 
 
 class ApartmentSearchAgent:
@@ -39,14 +41,19 @@ class ApartmentSearchAgent:
         self.retriever = retriever
         self.qdrant = qdrant_client          # NEW
         self.collection_name = collection_name
+        self.map_info = None
 
         # ─── Definición de herramientas ─────────────────────────────
         search_tool = Tool(
             name="search_apartments",
             func=self.search_apartments,
-            description=("Busca uno o varios apartamentos en la base "
-                         "de datos. Si el argumento es numérico se "
-                         "interpretará como ID único.")
+            description=(
+                "Usa esta herramienta cuando el usuario quiera buscar apartamentos. "
+                "Puede describir características como número de habitaciones, barrio, ciudad, etc. "
+                "La herramienta devuelve un mensaje simple con la cantidad de resultados encontrados. "
+                "NO formatea ni muestra los apartamentos directamente — los resultados son gestionados por la interfaz del usuario. "
+                "Después de usar esta herramienta, simplemente espera a que el usuario pida más detalles."
+            )
         )
 
         detail_tool = Tool(
@@ -59,24 +66,33 @@ class ApartmentSearchAgent:
         self.agent = initialize_agent(
             tools=[search_tool, detail_tool],
             llm=llm,
-            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+            agent=AgentType.OPENAI_FUNCTIONS ,
             memory=self.memory,
-            handle_parsing_errors=True,
+            handle_parsing_errors=False,
             agent_kwargs={"prefix": SYSTEM_PROMPT},     # NEW
             verbose=False,
         )
 
     EMOJIS = {
-    "price": "💰",
-    "bed": "🛏️",
-    "bath": "🛁",
-    "area": "📐",
-    "location": "📍",
-    "agency": "🏢",
-    "parking": "🅿️",
-    "stratum": "🎖️",
-    "bullet": "🌟",
-    "link": "🔗",}
+            "id": "🆔",
+            "price": "💰",
+            "bed": "🛏️",
+            "bath": "🛁",
+            "area": "📐",
+            "location": "📍",
+            "agency": "🏢",
+            "parking": "🅿️",
+            "stratum": "🎖️",
+            "floor": "🏙️",
+            "age": "⏳",
+            "facilities": "🛠️",
+            "places": "🗺️",
+            "upload": "📅",
+            "link": "🔗",
+            "transport": "🚍",
+            "desc": "📝",
+        }
+    
 
     def _format_price(self, value: int) -> str:
         try:
@@ -110,37 +126,19 @@ class ApartmentSearchAgent:
                     f"{EMOJIS['agency']} {agency} · "
                     f"{EMOJIS['parking']} {parking} · "
                     f"{EMOJIS['stratum']} {stratum}")
-        third_line = (f"   {EMOJIS['bullet']} {fac_str}") if fac_str else ""
+        third_line = (f"   {EMOJIS['facilities']} {fac_str}") if fac_str else ""
         fourth_line = (f"   {EMOJIS['link']} {link}") if link else ""
         divider = "\n"
         return "\n".join([first_line, second_line, third_line,fourth_line, divider])
     
-    def pretty_details(self, md: dict, description: str) -> str:
-        EMOJIS = {
-            "id": "🆔",
-            "price": "💰",
-            "bed": "🛏️",
-            "bath": "🛁",
-            "area": "📐",
-            "location": "📍",
-            "agency": "🏢",
-            "parking": "🅿️",
-            "stratum": "🎖️",
-            "floor": "🏙️",
-            "age": "⏳",
-            "facilities": "🛠️",
-            "places": "🗺️",
-            "upload": "📅",
-            "link": "🔗",
-            "transport": "🚍",
-            "desc": "📝",
-        }
+    def _pretty_details(self, md: dict) -> str:
 
         def fmt(val):
             if isinstance(val, list):
                 return ", ".join(map(str, val))
             return str(val)
 
+        EMOJIS = self.EMOJIS
         parts = []
 
         parts.append(f"{EMOJIS['id']}  {md.get('id', '?')}\n")
@@ -155,7 +153,7 @@ class ApartmentSearchAgent:
             f"{EMOJIS['area']} {md.get('area', '?')} m² \n"
         )
 
-        location = ", ".join(md.get("location", []))
+        location = (md.get("location", "Ubicaci'on Desconocida") )
         parts.append(
             f"{EMOJIS['location']} {location} | "
             f"{EMOJIS['agency']} {md.get('agency', '—')} \n "
@@ -186,10 +184,11 @@ class ApartmentSearchAgent:
         if transport:
             parts.append(f"{EMOJIS['transport']} Transporte: {', '.join(transport)}\n")
 
-        if desc := md.get("page_content") or description:
+        if desc := md.get("description") :
             parts.append(f"\n{EMOJIS['desc']} Descripción:\n{desc.strip()}\n")
 
         return "\n".join(parts)
+
 
     def search_apartments(self, query: str) -> str:
         # --- Búsqueda directa por ID -----------------------------------------
@@ -198,31 +197,40 @@ class ApartmentSearchAgent:
             if not doc:
                 return "No encontré un apartamento con ese ID."
             self.last_results = [doc]
-            md = doc.metadata
-            return self._pretty_listing(md, md.get("id", query))
+            return self._pretty_listing(doc.metadata, doc.metadata.get("id", query))
 
-        # --- Búsqueda semántica normal ---------------------------------------
+
+        # --- Si no hay resultados, pero se usó filtro, intentar sin filtro ----
+    
         docs = self.retriever.get_relevant_documents(query)
-        self.last_results = docs
+
         if not docs:
             return "No encontré ningún apartamento."
 
-        lines = [self._pretty_listing(doc.metadata, i)
-                for i, doc in enumerate(docs, start=1)]
-        lines.append("✦ Escribe el **ID** si quieres ver todos los detalles.")
-        return "\n".join(lines)
+        # --- Guardar y mostrar resultados --------------------------------------
+        self.last_results = docs
+        self.map_info = [doc.metadata for doc in docs]
+    
+        #listings = [self._pretty_listing(doc.metadata, i) for i, doc in enumerate(docs, start=1)]
+        listings = f"Se encontraron {len(docs)} apartamentos."
+
+        return (
+        f"Se encontraron {len(docs)} apartamentos relevantes. "
+        "Los resultados están disponibles. "
+        "✦ Escribe el ID si quieres ver los detalles de alguno."
+    )
+
 
 
     # 3. ─────────────────────────────  get_apartment_details
     def get_apartment_details(self, selection: str) -> str:
         selection = selection.strip()
         doc = self._fetch_by_id(selection)
-
+        self.map_info = []
         if doc:
-            return self.pretty_details(doc.metadata, doc.page_content)
+            return self._pretty_details(doc.metadata)
 
         return "No encontré un apartamento con ese ID."
-
 
     # Utilidad para buscar por ID directo en Qdrant o en caché
     # --------------------------------------------------------
@@ -252,5 +260,11 @@ class ApartmentSearchAgent:
 
         if ID_PATTERN.match(q):
             return self.get_apartment_details(q)
+        
+        if q.lower() == "comparar":
+            if not self.map_info:
+                return "No hay resultados para comparar."
+            else:
+                return "comparar"
 
         return self.agent.run(q)

@@ -67,7 +67,7 @@
     {
       "name": "location",
       "description": "El barrio, ciudad y departamento donde se encuentra el apartamento",
-      "type": "list[string]"
+      "type": "string"
     },
     {
       "name": "transportation",

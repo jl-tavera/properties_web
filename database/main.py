@@ -59,8 +59,10 @@ def populate_vector_db(file_path:str,
     df.dropna(subset=['places'], inplace=True)
     encoder = create_encoder(model_name="paraphrase-multilingual-MiniLM-L12-v2")
     client = QdrantClient(url="http://localhost:6333")
-    list_cols = ['coordinates', 'facilities', 'places', 'location', 'transportation']
+    list_cols = ['coordinates', 'facilities', 'places', 'transportation']
     df = load_list_cols(df=df, cols=list_cols)
+    df = extract_features_from_df(df=df, col = "description")
+    df = prepare_apartment_embeddings(df=df)
     # Create collection
     create_collection(client=client, encoder=encoder, collection_name=collection_name)
 

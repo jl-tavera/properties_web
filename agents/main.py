@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+import json
 from uuid import uuid4
 from agents.utils.langchain_utils import (
     create_llm,
@@ -30,13 +31,13 @@ class AgentRequest(BaseModel):
 class AgentResponse(BaseModel):
     response: str
     session_id: int
+    map_info: list[dict]
 
 
 @app.post("/ask", response_model=AgentResponse)
 def ask(payload: AgentRequest):
     # reuse or create session_id
     sid = payload.session_id
-    print(f"Session ID: {sid}") 
 
     agent = session_store.get(sid)
     if not agent:
@@ -52,5 +53,12 @@ def ask(payload: AgentRequest):
         session_store[sid] = agent
 
     reply = agent.handle_query(payload.query)
+    if agent.map_info:
+        # convert map_info to JSON string
+        map_info_json = json.dumps(agent.map_info, ensure_ascii=False)
+        # convert to dict
+        map_info = json.loads(map_info_json)
+    else:
+        map_info = []
 
-    return {"response": reply, "session_id": sid}
+    return {"response": reply, "session_id": sid, "map_info": map_info}
