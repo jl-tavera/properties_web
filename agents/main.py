@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from cachetools import TTLCache
 import json
 from uuid import uuid4
 from agents.utils.langchain_utils import (
@@ -19,7 +20,7 @@ DOCUMENT_CONTENT_DESCRIPTION = "Descripción del apartamento"
 
 app = FastAPI()
 # in-memory session store: session_id -> agent
-session_store: dict[str, ApartmentSearchAgent] = {}
+session_store = TTLCache(maxsize=10, ttl=900)
 
 
 
