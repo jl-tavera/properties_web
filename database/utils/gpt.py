@@ -3,6 +3,7 @@ import pandas as pd
 from openai import OpenAI
 
 
+
 def extract_place_info_from_text(input_text: str, api_key: str) -> dict:
     """
     Sends a JSON string of places to OpenAI and extracts structured information.

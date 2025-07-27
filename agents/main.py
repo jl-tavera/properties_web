@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from cachetools import TTLCache
 import json
-from uuid import uuid4
 from agents.utils.langchain_utils import (
     create_llm,
     create_vectorstore,
